@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>保齡球新手入門與飛碟球指南｜LLM Wiki 教學簡報</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --surface: #1e293b;
+      --surface-light: #273449;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --accent: #f59e0b;
+      --accent-soft: rgba(245, 158, 11, 0.14);
+      --blue: #38bdf8;
+      --green: #34d399;
+      --red: #fb7185;
+      --red-soft: rgba(251, 113, 133, 0.14);
+      --border: rgba(148, 163, 184, 0.2);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Top Progress Bar */
+    .progress-track {
+      width: 100%;
+      height: 5px;
+      background: rgba(255, 255, 255, 0.08);
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 100;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--blue));
+      width: 10%;
+      transition: width 0.3s ease;
+    }
+
+    /* Slide Viewport */
+    .deck {
+      flex: 1;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 28px 24px 80px;
+      overflow-y: auto;
+    }
+
+    .slide {
+      display: none;
+      width: 100%;
+      max-width: 1040px;
+      min-height: 540px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 40px 48px 32px;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+      flex-direction: column;
+      justify-content: space-between;
+      animation: fadeIn 0.25s ease;
+    }
+
+    .slide.active {
+      display: flex;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .slide-header {
+      margin-bottom: 24px;
+    }
+
+    .badge {
+      display: inline-block;
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      color: var(--accent);
+      background: var(--accent-soft);
+      padding: 4px 12px;
+      border-radius: 999px;
+      margin-bottom: 10px;
+    }
+
+    h1 {
+      font-size: clamp(1.9rem, 3.6vw, 2.8rem);
+      line-height: 1.25;
+      margin-bottom: 14px;
+    }
+
+    h2 {
+      font-size: clamp(1.45rem, 2.6vw, 2rem);
+      line-height: 1.3;
+    }
+
+    h3 {
+      font-size: 1.1rem;
+      margin-bottom: 8px;
+      color: var(--blue);
+    }
+
+    p {
+      line-height: 1.65;
+      color: #cbd5e1;
+      font-size: 1rem;
+    }
+
+    .slide-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 20px;
+    }
+
+    /* Source Footer */
+    .slide-footer {
+      margin-top: 24px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.85rem;
+      color: var(--muted);
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .source-tag {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      background: rgba(56, 189, 248, 0.12);
+      color: var(--blue);
+      padding: 4px 10px;
+      border-radius: 6px;
+    }
+
+    /* Grids & Cards */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .grid-4 {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .card {
+      background: var(--surface-light);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px 20px;
+    }
+
+    .card.myth {
+      border-left: 4px solid var(--red);
+    }
+
+    .card.fact {
+      border-left: 4px solid var(--green);
+    }
+
+    .alert-box {
+      background: var(--red-soft);
+      border: 1px solid rgba(251, 113, 133, 0.45);
+      border-radius: 12px;
+      padding: 14px 18px;
+      color: #fecdd3;
+      font-size: 0.95rem;
+      line-height: 1.6;
+    }
+
+    .tip-box {
+      background: rgba(52, 211, 153, 0.12);
+      border: 1px solid rgba(52, 211, 153, 0.35);
+      border-radius: 12px;
+      padding: 14px 18px;
+      color: #d1fae5;
+      font-size: 0.95rem;
+      line-height: 1.6;
+    }
+
+    ul.clean-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    ul.clean-list li {
+      padding-left: 20px;
+      position: relative;
+      line-height: 1.6;
+      color: #e2e8f0;
+    }
+
+    ul.clean-list li::before {
+      content: "•";
+      color: var(--accent);
+      font-weight: bold;
+      position: absolute;
+      left: 4px;
+    }
+
+    /* Lane Visual (P2) */
+    .lane-diagram {
+      background: linear-gradient(90deg, #78350f 0%, #b45309 30%, #d97706 70%, #92400e 100%);
+      border-radius: 12px;
+      padding: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: relative;
+      border: 2px solid #f59e0b;
+      gap: 10px;
+    }
+
+    .lane-marker {
+      background: rgba(15, 23, 42, 0.85);
+      padding: 10px 14px;
+      border-radius: 10px;
+      text-align: center;
+      font-size: 0.88rem;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .lane-marker strong {
+      display: block;
+      color: var(--accent);
+      font-size: 1rem;
+      margin-bottom: 2px;
+    }
+
+    /* Scoreboard (P3) */
+    .scoreboard {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    .frame-box {
+      background: #0f172a;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      text-align: center;
+    }
+
+    .frame-title {
+      background: rgba(255, 255, 255, 0.06);
+      font-size: 0.82rem;
+      padding: 5px;
+      color: var(--muted);
+    }
+
+    .frame-rolls {
+      display: flex;
+      justify-content: flex-end;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .roll {
+      width: 36px;
+      height: 32px;
+      line-height: 32px;
+      font-weight: 700;
+      border-left: 1px solid var(--border);
+      color: var(--accent);
+    }
+
+    .frame-total {
+      font-size: 1.5rem;
+      font-weight: 800;
+      padding: 12px 0;
+      color: var(--text);
+    }
+
+    .frame-note {
+      font-size: 0.78rem;
+      color: var(--blue);
+      padding: 0 8px 10px;
+    }
+
+    /* Table */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.94rem;
+    }
+
+    th, td {
+      padding: 12px 14px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+      line-height: 1.5;
+    }
+
+    th {
+      color: var(--accent);
+      background: rgba(255, 255, 255, 0.04);
+      font-weight: 700;
+    }
+
+    /* Step Flow (P8) */
+    .step-num {
+      display: inline-flex;
+      width: 28px;
+      height: 28px;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #0f172a;
+      font-weight: 800;
+      font-size: 0.9rem;
+      margin-bottom: 8px;
+    }
+
+    /* Bottom Navigation Bar */
+    .controls {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 64px;
+      background: rgba(15, 23, 42, 0.92);
+      backdrop-filter: blur(8px);
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px;
+      z-index: 100;
+    }
+
+    .nav-btn {
+      background: var(--surface-light);
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 9px 18px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 0.92rem;
+      font-weight: 600;
+      transition: background 0.2s, border-color 0.2s;
+    }
+
+    .nav-btn:hover:not(:disabled) {
+      background: #334155;
+      border-color: var(--accent);
+    }
+
+    .nav-btn:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+
+    .page-indicator {
+      font-size: 0.95rem;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .page-indicator strong {
+      color: var(--text);
+    }
+
+    @media (max-width: 820px) {
+      .slide {
+        padding: 24px 20px 20px;
+        min-height: auto;
+      }
+      .grid-2, .grid-3, .grid-4, .scoreboard {
+        grid-template-columns: 1fr;
+      }
+      .lane-diagram {
+        flex-direction: column;
+        align-items: stretch;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="progress-track">
+    <div class="progress-fill" id="progressFill"></div>
+  </div>
+
+  <main class="deck" id="deck">
+
+    <!-- P1 -->
+    <section class="slide active">
+      <div class="slide-header">
+        <span class="badge">LLM WIKI 教學簡報｜新手入門篇</span>
+        <h1>保齡球新手入門與飛碟球指南</h1>
+        <p>10 分鐘看懂球道計分、挑對裝備、告別洗溝，並認識台灣球館最具代表性的「飛碟球（Spinner）」打法。</p>
+      </div>
+      <div class="slide-body">
+        <div class="grid-4">
+          <div class="card">
+            <h3>01 場地與規則</h3>
+            <p>看懂 60 英尺球道標記、油區概念與 10 格計分算式。</p>
+          </div>
+          <div class="card">
+            <h3>02 裝備挑選</h3>
+            <p>破解選球磅數迷思，搞懂保齡球鞋左右腳分工。</p>
+          </div>
+          <div class="card">
+            <h3>03 球路與飛碟球</h3>
+            <p>釐清直球、曲球、飛碟球邊界與防受傷出手重點。</p>
+          </div>
+          <div class="card">
+            <h3>04 實戰與禮儀</h3>
+            <p>掌握看箭頭瞄準、對角線補中與球道禮讓禮儀。</p>
+          </div>
+        </div>
+      </div>
+      <div class="slide-footer">
+        <span>提示：可使用鍵盤 ← / → 方向鍵或空白鍵切換頁面</span>
+        <span class="source-tag">來源：wiki/index.md</span>
+      </div>
+    </section>
+
+    <!-- P2 -->
+    <section class="slide">
+      <div class="slide-header">
+        <span class="badge">P2｜場地結構</span>
+        <h2>看懂球道：不只是直直往前丟</h2>
+      </div>
+      <div class="slide-body">
+        <div class="lane-diagram">
+          <div class="lane-marker">
+            <strong>0 英尺</strong>
+            犯規線（不可踩線）
+          </div>
+          <div class="lane-marker">
+            <strong>15 英尺</strong>
+            7 個目標箭頭（瞄準點）
+          </div>
+          <div class="lane-marker">
+            <strong>前～中段</strong>
+            球道油區（減少摩擦）
+          </div>
+          <div class="lane-marker">
+            <strong>60 英尺</strong>
+            1 號球瓶（共 10 支）
+          </div>
+        </div>
+        <div class="grid-2">
+          <div class="card">
+            <h3>39 塊板條寬度</h3>
+            <p>標準球道由 39 條木板（或合成板）拼成，正中央是第 20 板。進階球手常透過計算「站第幾板、丟第幾箭頭」來穩定重複動作。</p>
+          </div>
+          <div class="card">
+            <h3>為什麼球道要上油？</h3>
+            <p>球道前段塗有專用保養油，主要用來保護球道表面不被球體磨損，同時也會直接影響球體在滑行與滾動時的摩擦力變化。</p>
+          </div>
+        </div>
+      </div>
+      <div class="slide-footer">
+        <span>保齡球新手入門與飛碟球指南</span>
+        <span class="source-tag">來源：wiki/rules-and-lane.md</span>
+      </div>
+    </section>
+
+    <!-- P3 -->
+    <section class="slide">
+      <div class="slide-header">
+        <span class="badge">P3｜計分規則</span>
+        <h2>一分鐘搞懂計分規則</h2>
+      </div>
+      <div class="slide-body">
+        <p>一局共 <strong>10 格</strong>，每格最多丟 2 球。重點在於 <strong>全倒（X）加後兩球</strong>、<strong>補中（/）加後一球</strong>，連續 3 次全倒稱為「火雞（Turkey）」。</p>
+        <div class="scoreboard">
+          <div class="frame-box">
+            <div class="frame-title">第 1 格（全倒 Strike）</div>
+            <div class="frame-rolls"><div class="roll"></div><div class="roll">X</div></div>
+            <div class="frame-total">20</div>
+            <div class="frame-note">10 + 後兩球 (7 + 3) = 20</div>
+          </div>
+          <div class="frame-box">
+            <div class="frame-title">第 2 格（補中 Spare）</div>
+            <div class="frame-rolls"><div class="roll">7</div><div class="roll">/</div></div>
+            <div class="frame-total">38</div>
+            <div class="frame-note">20 + 10 + 後一球 (8) = 38</div>
+          </div>
+          <div class="frame-box">
+            <div class="frame-title">第 3 格（未全倒 Open）</div>
+            <div class="frame-rolls"><div class="roll">8</div><div class="roll">1</div></div>
+            <div class="frame-total">47</div>
+            <div class="frame-note">38 + (8 + 1) = 47</div>
+          </div>
+        </div>
+        <div class="tip-box">
+          <strong>最容易搞混的第 10 格規則：</strong>第 10 格若打出全倒（X）或補中（/），會獲得加打球數（最多打滿 3 球），但<strong>第 10 格只算這 3 球實際擊倒的瓶數總和</strong>，不會再重複加分。例如打出 <code>X / 8 / 1</code>，該格就是 <code>10 + 8 + 1 = 19</code> 分。
+        </div>
+      </div>
+      <div class="slide-footer">
+        <span>保齡球新手入門與飛碟球指南</span>
+        <span class="source-tag">來源：wiki/rules-and-lane.md</span>
+      </div>
+    </section>
+
+    <!-- P4 -->
+    <section class="slide">
+      <div class="slide-header">
+        <span class="badge">P4｜挑球指南</span>
+        <h2>新手挑球指南：別再盲信體重除以 10</h2>
+      </div>
+      <div class="slide-body">
+        <div class="grid-2">
+          <div class="card myth">
+            <h3>常見迷思（Myth）</h3>
+            <p>「體重（公斤）除以 10，就是最適合自己的球重。」<br>這套說法流傳很廣，但其實沒有實質證據支持，常讓新手挑到過輕或過重、反而容易受傷的球。</p>
+          </div>
+          <div class="card fact">
+            <h3>正確挑選原則（Fact）</h3>
+            <p>球館公球範圍多在 <strong>8～16 磅</strong>。實測時單手自然持球、擺盪不吃力，且大拇指能輕鬆進出不卡指、中指與無名指自然服貼即可。</p>
+          </div>
+        </div>
+        <div class="card">
+          <h3>球館公球 vs 自備球</h3>
+          <ul class="clean-list">
+            <li><strong>球館公球（House Ball）</strong>：指孔呈標準等邊三角形排列，適合多人共用，但抓握較耗力。</li>
+            <li><strong>自備球（Personal Ball）</strong>：依個人手掌跨距與指圍量身鑽孔，出手更省力，也能針對直球、曲球或飛碟球調整鑽孔角度。</li>
+          </ul>
+        </div>
+      </div>
+      <div class="slide-footer">
+        <span>保齡球新手入門與飛碟球指南</span>
+        <span class="source-tag">來源：wiki/equipment-and-gear.md</span>
+      </div>
+    </section>
+
+    <!-- P5 -->
+    <section class="slide">
+      <div class="slide-header">
+        <span class="badge">P5｜球鞋構造</span>
+        <h2>為什麼一定要穿保齡球鞋？</h2>
+      </div>
+      <div class="slide-body">
+        <p>一般運動鞋的橡膠大底在球道助走區會「急煞」，極易導致膝蓋受傷或重心前撲；專用保齡球鞋則是為了<strong>穩定滑步與煞車</strong>而設計。</p>
+        <div class="grid-2">
+          <div class="card">
+            <h3>滑步腳（右手持球為左腳）</h3>
+            <p>鞋底採用<strong>皮革或麂皮材質</strong>，讓你在最後一步助走時能順暢向前滑行，緩衝衝力並維持上半身穩定。</p>
+          </div>
+          <div class="card">
+            <h3>支撐腳（右手持球為右腳）</h3>
+            <p>進階專屬球鞋會將支撐腳設計為<strong>橡膠止滑底</strong>，負責在助走與出手瞬間提供抓地力與蹬地支撐。</p>
+          </div>
+        </div>
+        <div class="tip-box">
+          <strong>進階知識（可換式鞋底）：</strong>球館公鞋通常是雙腳皆可滑的通用底；進階球鞋（如 Dexter SST 系列）可依場地澀度更換不同編號的滑步底，<strong>數字越大代表越滑</strong>（例如 S12 比 S8 更滑）。
+        </div>
+      </div>
+      <div class="slide-footer">
+        <span>保齡球新手入門與飛碟球指南</span>
+        <span class="source-tag">來源：wiki/equipment-and-gear.md</span>
+      </div>
+    </section>
+
+    <!-- P6 -->
+    <section class="slide">
+      <div class="slide-header">
+        <span class="badge">P6｜球路比較</span>
+        <h2>三大球路一次看懂：直球、曲球、飛碟球</h2>
+      </div>
+      <div class="slide-body">
+        <table>
+          <thead>
+            <tr>
+              <th>比較項目</th>
+              <th>直球（Straight）</th>
+              <th>曲球（Hook）</th>
+              <th>飛碟球（Spinner）</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>旋轉方式</strong></td>
+              <td>向前滾動，幾乎無側旋</td>
+              <td>強力側旋與前滾結合</td>
+              <td><strong>水平陀螺式自轉</strong>（球面朝上旋轉）</td>
+            </tr>
+            <tr>
+              <td><strong>行進軌跡</strong></td>
+              <td>筆直前進</td>
+              <td>前段滑行、<strong>尾段大幅度向內急彎</strong></td>
+              <td><strong>軌跡相對筆直</strong>，不會大幅急彎</td>
+            </tr>
+            <tr>
+              <td><strong>撞瓶特色</strong></td>
+              <td>易穿透但瓶組散開度較低</td>
+              <td>以大入射角切入，連鎖破壞力最強</td>
+              <td>靠水平旋轉將球瓶橫向彈飛，破壞力高</td>
+            </tr>
+            <tr>
+              <td><strong>適合對象</strong></td>
+              <td>初次接觸、補中（Spare）必備</td>
+              <td>熟悉油型判讀的進階玩家</td>
+              <td>台灣球館主流，新手進階首選</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="slide-footer">
+        <span>保齡球新手入門與飛碟球指南</span>
+        <span class="source-tag">來源：wiki/styles-comparison.md</span>
+      </div>
+    </section>
+
+    <!-- P7 -->
+    <section class="slide">
+      <div class="slide-header">
+        <span class="badge">P7｜台灣特色球路</span>
+        <h2>什麼是飛碟球（Spinner）？</h2>
+      </div>
+      <div class="slide-body">
+        <p>飛碟球是<strong>台灣獨創並發揚光大</strong>的保齡球打法，出手瞬間讓球體像陀螺一樣在球道上水平旋轉滑行，撞擊球瓶時產生極強的橫向散射效果。</p>
+        <div class="grid-3">
+          <div class="card">
+            <h3>1. 水平自轉</h3>
+            <p>旋轉軸垂直於地面，球體行進路線接近直線，與美式曲球的尾段急彎截然不同。</p>
+          </div>
+          <div class="card">
+            <h3>2. 常用 11 磅左右</h3>
+            <p>為了讓手腕與手臂在出手時能俐落翻轉並維持球速，台灣球友打飛碟球最常選用約 11 磅的球重。</p>
+          </div>
+          <div class="card">
+            <h3>3. 抗油型干擾</h3>
+            <p>因為球體靠水平自轉前進、不依賴球道尾段摩擦力急彎，受場地油型變化影響較小，穩定度高。</p>
+          </div>
+        </div>
+      </div>
+      <div class="slide-footer">
+        <span>保齡球新手入門與飛碟球指南</span>
+        <span class="source-tag">來源：wiki/styles-comparison.md, wiki/spinner-technique.md</span>
+      </div>
+    </section>
+
+    <!-- P8 -->
+    <section class="slide">
+      <div class="slide-header">
+        <span class="badge">P8｜飛碟球基礎</span>
+        <h2>飛碟球基礎動作與防受傷提醒</h2>
+      </div>
+      <div class="slide-body">
+        <div class="grid-4">
+          <div class="card">
+            <div class="step-num">1</div>
+            <h3>自然站位</h3>
+            <p>放鬆持球於胸腹前，肩膀放平，雙眼鎖定球道目標箭頭。</p>
+          </div>
+          <div class="card">
+            <div class="step-num">2</div>
+            <h3>穩定助走</h3>
+            <p>保持四步節奏平穩往前，讓球靠重力自然後擺，不要刻意後拉。</p>
+          </div>
+          <div class="card">
+            <div class="step-num">3</div>
+            <h3>翻轉手臂 180°</h3>
+            <p>前擺至腳邊出手瞬間，順勢由前臂帶動翻轉約 180 度讓球體水平自轉。</p>
+          </div>
+          <div class="card">
+            <div class="step-num">4</div>
+            <h3>順勢延伸</h3>
+            <p>出手後手臂自然往前上方延伸，維持身體平衡不倒向側邊。</p>
+          </div>
+        </div>
+        <div class="alert-box">
+          <strong>防受傷提醒（重要）：</strong>社群討論雖有「大拇指推出」與「中指無名指發力」等不同細節流派，但共同鐵則都是<strong>初學者切忌在球太重或後擺不穩時「硬轉手腕」</strong>，否則極易造成手腕肌腱與前臂拉傷。建議先用輕磅球練順擺盪節奏，再逐步加入翻轉動作。
+        </div>
+      </div>
+      <div class="slide-footer">
+        <span>保齡球新手入門與飛碟球指南</span>
+        <span class="source-tag">來源：wiki/spinner-technique.md</span>
+      </div>
+    </section>
+
+    <!-- P9 -->
+    <section class="slide">
+      <div class="slide-header">
+        <span class="badge">P9｜實戰與禮儀</span>
+        <h2>告別洗溝：瞄準技巧與球道禮儀</h2>
+      </div>
+      <div class="slide-body">
+        <div class="grid-2">
+          <div class="card">
+            <h3>實戰瞄準 3 招（右手為基準）</h3>
+            <ul class="clean-list">
+              <li><strong>看箭頭不看瓶（Spot Bowling）</strong>：球瓶遠在 60 英尺外很難對準，改盯 15 英尺處的目標箭頭，準度會瞬間提升。</li>
+              <li><strong>瞄準 1-3 瓶進球點（Pocket）</strong>：打在 1 號瓶與 3 號瓶之間（左手則為 1-2 瓶），最容易引發連鎖全倒。</li>
+              <li><strong>對角線補中（Spare）</strong>：左邊剩瓶就站右邊斜丟，右邊剩瓶就站左邊斜丟，大幅增加容錯寬度。</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>新手必懂球道禮儀</h3>
+            <ul class="clean-list">
+              <li><strong>左右禮讓原則</strong>：當相鄰球道有人已經站上助走道準備投球時，請先停下等候，避免同時起跑互相干擾。</li>
+              <li><strong>保持助走區乾燥</strong>：飲料與食物切勿帶入助走區，若鞋底沾水會瞬間失去滑步功能，非常危險。</li>
+              <li><strong>投完即退</strong>：球出手後欣賞完結果就退回座位區，讓出空間給下一位球友。</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="slide-footer">
+        <span>保齡球新手入門與飛碟球指南</span>
+        <span class="source-tag">來源：wiki/aiming-and-spare.md</span>
+      </div>
+    </section>
+
+    <!-- P10 -->
+    <section class="slide">
+      <div class="slide-header">
+        <span class="badge">P10｜總複習與術語表</span>
+        <h2>新手下場速查表與術語翻譯</h2>
+      </div>
+      <div class="slide-body">
+        <div class="grid-2">
+          <div class="card">
+            <h3>下場前 3 步驟檢查清單</h3>
+            <ul class="clean-list">
+              <li><strong>換好專用球鞋</strong>：確認鞋底乾燥，測試左腳滑步順暢度。</li>
+              <li><strong>挑對不卡指的球</strong>：單手擺盪輕鬆、大拇指進出順暢，不盲信體重 ÷ 10。</li>
+              <li><strong>眼睛鎖定箭頭</strong>：先求穩穩丟進球道中央，再逐步練習飛碟球翻轉。</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>台灣慣用術語對照表</h3>
+            <table>
+              <tbody>
+                <tr><th>全倒（Strike / X）</th><td>第一球即擊倒全部 10 支球瓶</td></tr>
+                <tr><th>補中（Spare / /）</th><td>同一格內兩球合計擊倒 10 支球瓶</td></tr>
+                <tr><th>洗溝（Gutter）</th><td>球滾入球道兩側溝槽，該球計 0 分</td></tr>
+                <tr><th>球瓶（Pins）</th><td>球道末端排列成三角形的 10 支瓶子</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="slide-footer">
+        <span>本簡報所有內容皆對應自 Bowling &amp; Spinner LLM Wiki</span>
+        <span class="source-tag">來源：wiki/glossary.md, wiki/index.md</span>
+      </div>
+    </section>
+
+  </main>
+
+  <nav class="controls">
+    <button class="nav-btn" id="prevBtn">← 上一頁</button>
+    <div class="page-indicator">
+      <strong id="currentNum">1</strong> / <span id="totalNum">10</span>
+    </div>
+    <button class="nav-btn" id="nextBtn">下一頁 →</button>
+  </nav>
+
+  <script>
+    const slides = Array.from(document.querySelectorAll('.slide'));
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const currentNum = document.getElementById('currentNum');
+    const totalNum = document.getElementById('totalNum');
+    const progressFill = document.getElementById('progressFill');
+
+    let currentIndex = 0;
+    totalNum.textContent = slides.length;
+
+    function updateSlide(index) {
+      currentIndex = Math.max(0, Math.min(index, slides.length - 1));
+      slides.forEach((slide, i) => {
+        slide.classList.toggle('active', i === currentIndex);
+      });
+      currentNum.textContent = currentIndex + 1;
+      progressFill.style.width = `${((currentIndex + 1) / slides.length) * 100}%`;
+      prevBtn.disabled = currentIndex === 0;
+      nextBtn.disabled = currentIndex === slides.length - 1;
+    }
+
+    prevBtn.addEventListener('click', () => updateSlide(currentIndex - 1));
+    nextBtn.addEventListener('click', () => updateSlide(currentIndex + 1));
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+        e.preventDefault();
+        updateSlide(currentIndex + 1);
+      } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+        e.preventDefault();
+        updateSlide(currentIndex - 1);
+      } else if (e.key === 'Home') {
+        updateSlide(0);
+      } else if (e.key === 'End') {
+        updateSlide(slides.length - 1);
+      }
+    });
+
+    // Touch swipe support
+    let touchStartX = 0;
+    document.addEventListener('touchstart', (e) => {
+      touchStartX = e.changedTouches[0].screenX;
+    }, { passive: true });
+
+    document.addEventListener('touchend', (e) => {
+      const diff = e.changedTouches[0].screenX - touchStartX;
+      if (Math.abs(diff) > 50) {
+        updateSlide(diff < 0 ? currentIndex + 1 : currentIndex - 1);
+      }
+    }, { passive: true });
+
+    updateSlide(0);
+  </script>
+</body>
+</html>
